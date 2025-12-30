@@ -3,24 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello Page</title>
+    <title>Taleforge Password Reset</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #0D0D0D;
+            color: #E8D5B7;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
+            justify-content: center;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 400px;
+            padding: 40px;
+            background-color: #1C1C1E;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
         h1 {
-            color: #333;
+            color: #C4A574;
+            margin-bottom: 16px;
+            font-size: 24px;
+        }
+        p {
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        .button {
+            background-color: #C4A574;
+            color: #0D0D0D;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover {
+            background-color: #B89462;
+        }
+        .spinner {
+            border: 3px solid #2C2C2E;
+            border-top: 3px solid #C4A574;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <h1>Hello, World!</h1>
+    <div class="container">
+        <h1>Taleforge</h1>
+        <p>Redirecting you to the password reset page...</p>
+        <div class="spinner"></div>
+        <p>If the app doesn't open automatically, <a href="#" onclick="manualRedirect()" class="button">click here</a> to try again.</p>
+    </div>
+
+    <script>
+        // Function to extract URL parameters
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            const results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // Function to construct the deep link URL
+        function constructDeepLink() {
+            const token = getUrlParameter('token');
+            const type = getUrlParameter('type');
+            const accessToken = getUrlParameter('access_token');
+            const refreshToken = getUrlParameter('refresh_token');
+
+            // Get the redirect URL from the query parameter
+            const redirectBase = getUrlParameter('redirect') || 'myapp://auth/reset-password';
+
+            // Construct the full deep link URL with parameters
+            let deepLinkUrl = redirectBase;
+
+            const params = [];
+            if (token) params.push(`token=${encodeURIComponent(token)}`);
+            if (type) params.push(`type=${encodeURIComponent(type)}`);
+            if (accessToken) params.push(`access_token=${encodeURIComponent(accessToken)}`);
+            if (refreshToken) params.push(`refresh_token=${encodeURIComponent(refreshToken)}`);
+
+            if (params.length > 0) {
+                deepLinkUrl += '?' + params.join('&');
+            }
+
+            return deepLinkUrl;
+        }
+
+        // Function for manual redirect
+        function manualRedirect() {
+            const deepLinkUrl = constructDeepLink();
+            window.location.href = deepLinkUrl;
+        }
+
+        // Auto redirect when page loads
+        window.onload = function() {
+            setTimeout(function() {
+                manualRedirect();
+            }, 1000); // Wait 1 second before redirecting
+        };
+    </script>
 </body>
 </html>
-
