@@ -139,6 +139,8 @@
         // Function for manual redirect
         function manualRedirect() {
             const deepLinkUrl = constructDeepLink();
+            console.log('Constructed deep link URL:', deepLinkUrl);
+            alert('Redirecting to: ' + deepLinkUrl); // Debug alert
             window.location.href = deepLinkUrl;
         }
 
@@ -156,9 +158,14 @@
                 document.getElementById('mobile-instructions').style.display = 'block';
             }
 
+            // For debugging, show the URL that will be constructed
             setTimeout(function() {
+                const deepLinkUrl = constructDeepLink();
+                console.log('About to redirect to:', deepLinkUrl);
+                // Show the URL briefly before redirecting
+                document.getElementById('message').textContent = 'Redirecting...';
                 manualRedirect();
-            }, 1000); // Wait 1 second before redirecting
+            }, 2000); // Wait 2 seconds to show debug info
         };
     </script>
 </body>
