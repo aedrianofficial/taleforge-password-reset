@@ -186,10 +186,13 @@
                 // For Expo Go on mobile, use the Expo development URL
                 // IMPORTANT: Replace 192.168.1.108 with your computer's local IP address
                 // Find your IP with: hostname -I (Linux) or ifconfig/ipconfig (macOS/Windows)
-                deepLinkUrl = 'exp://192.168.1.108:8081/--/reset-password';
+
+                // Test with the reset password route at root level
+                deepLinkUrl = 'exp://192.168.1.108:8081/--/test-reset-password';
+                console.log('Testing deep link with reset password route:', deepLinkUrl);
             } else {
                 // For desktop or when custom scheme should work
-                deepLinkUrl = 'myapp://reset-password';
+                deepLinkUrl = 'myapp://test-deep-link';
             }
 
             // Add parameters - prioritize the auth tokens from Supabase
