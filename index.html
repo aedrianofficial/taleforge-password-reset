@@ -171,12 +171,21 @@
 
         // Function to construct the deep link URL
         function constructDeepLink() {
+            console.log('=== CONSTRUCTING DEEP LINK ===');
+
             const token = getUrlParameter('token');
             const type = getUrlParameter('type');
             const accessToken = getUrlParameter('access_token');
             const refreshToken = getUrlParameter('refresh_token');
             const expiresAt = getUrlParameter('expires_at');
             const tokenType = getUrlParameter('token_type');
+
+            console.log('Extracted parameters:', {
+                token: token ? 'PRESENT' : 'MISSING',
+                type: type || 'MISSING',
+                accessToken: accessToken ? 'PRESENT' : 'MISSING',
+                refreshToken: refreshToken ? 'PRESENT' : 'MISSING'
+            });
 
             // Check if we're on mobile (Android/iOS)
             const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -188,7 +197,7 @@
                 // Replace 192.168.1.108 with your computer's actual IP address
                 // Find it with: hostname -I (Linux) or ipconfig/ifconfig (Windows/macOS)
                 deepLinkUrl = 'exp://192.168.1.108:8081/--/reset-password';
-                console.log('Using deep link:', deepLinkUrl);
+                console.log('Using mobile deep link base:', deepLinkUrl);
 
                 // Alternative: If using tunnel, uncomment and use:
                 // deepLinkUrl = 'exp://your-tunnel-url.exp.direct/--/reset-password';
@@ -208,8 +217,12 @@
 
             if (params.length > 0) {
                 deepLinkUrl += '?' + params.join('&');
+                console.log('Added parameters to URL');
+            } else {
+                console.log('No parameters to add');
             }
 
+            console.log('Final deep link URL:', deepLinkUrl);
             return deepLinkUrl;
         }
 
