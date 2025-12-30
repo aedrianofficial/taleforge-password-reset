@@ -83,11 +83,18 @@
     </div>
 
     <script>
-        // Function to extract URL parameters
+        // Function to extract URL parameters from both query string and hash
         function getUrlParameter(name) {
-            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-            const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-            const results = regex.exec(location.search);
+            // First try query parameters (after ?)
+            let regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            let results = regex.exec(location.search);
+
+            // If not found in query, try hash/fragment (after #)
+            if (results === null && location.hash) {
+                regex = new RegExp('[\\#&]' + name + '=([^&#]*)');
+                results = regex.exec(location.hash);
+            }
+
             return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         }
 
@@ -101,9 +108,14 @@
 
             console.log('=== REDIRECT PAGE DEBUG ===');
             console.log('Full URL:', window.location.href);
-            console.log('All URL parameters:');
+            console.log('Query parameters (after ?):');
             const urlParams = new URLSearchParams(window.location.search);
             for (let [key, value] of urlParams) {
+                console.log(`  ${key}: ${value}`);
+            }
+            console.log('Hash parameters (after #):');
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            for (let [key, value] of hashParams) {
                 console.log(`  ${key}: ${value}`);
             }
             console.log('Extracted parameters:', {
@@ -116,10 +128,10 @@
             console.log('========================');
 
             // Check for Supabase errors in the URL hash
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            const error = hashParams.get('error');
-            const errorCode = hashParams.get('error_code');
-            const errorDesc = hashParams.get('error_description');
+            const errorHashParams = new URLSearchParams(window.location.hash.substring(1));
+            const error = errorHashParams.get('error');
+            const errorCode = errorHashParams.get('error_code');
+            const errorDesc = errorHashParams.get('error_description');
 
             // Display debug info visually on the page
             let debugHtml = 'Full URL: ' + window.location.href + '<br><br>';
@@ -133,12 +145,23 @@
             }
 
             debugHtml += 'Query Parameters found:<br>';
-            const allParams = [];
+            const queryParams = [];
             for (let [key, value] of urlParams) {
-                allParams.push(`${key}: ${value}`);
+                queryParams.push(`${key}: ${value}`);
             }
-            debugHtml += allParams.join('<br>') || 'NONE';
+            debugHtml += queryParams.join('<br>') || 'NONE';
 
+            debugHtml += '<br><br>Hash Parameters found:<br>';
+            const debugHashParams = new URLSearchParams(window.location.hash.substring(1));
+            const hashParamList = [];
+            for (let [key, value] of debugHashParams) {
+                hashParamList.push(`${key}: ${value.substring(0, 50)}...`); // Truncate long values
+            }
+            debugHtml += hashParamList.join('<br>') || 'NONE';
+
+            // Show what device type we're detected as
+            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            debugHtml += '<br><br>Device detected as: ' + (isMobile ? 'MOBILE' : 'DESKTOP');
             debugHtml += '<br><br>Constructed deep link:<br>' + constructDeepLink();
 
             document.getElementById('debug-content').innerHTML = debugHtml;
@@ -151,6 +174,8 @@
             const type = getUrlParameter('type');
             const accessToken = getUrlParameter('access_token');
             const refreshToken = getUrlParameter('refresh_token');
+            const expiresAt = getUrlParameter('expires_at');
+            const tokenType = getUrlParameter('token_type');
 
             // Check if we're on mobile (Android/iOS)
             const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -167,12 +192,14 @@
                 deepLinkUrl = 'myapp://reset-password';
             }
 
-            // Add parameters
+            // Add parameters - prioritize the auth tokens from Supabase
             const params = [];
-            if (token) params.push(`token=${encodeURIComponent(token)}`);
-            if (type) params.push(`type=${encodeURIComponent(type)}`);
             if (accessToken) params.push(`access_token=${encodeURIComponent(accessToken)}`);
             if (refreshToken) params.push(`refresh_token=${encodeURIComponent(refreshToken)}`);
+            if (token) params.push(`token=${encodeURIComponent(token)}`);
+            if (type) params.push(`type=${encodeURIComponent(type)}`);
+            if (expiresAt) params.push(`expires_at=${encodeURIComponent(expiresAt)}`);
+            if (tokenType) params.push(`token_type=${encodeURIComponent(tokenType)}`);
 
             if (params.length > 0) {
                 deepLinkUrl += '?' + params.join('&');
@@ -184,8 +211,8 @@
         // Function for manual redirect
         function manualRedirect() {
             // Check for errors again
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            const hasError = hashParams.get('error');
+            const redirectHashParams = new URLSearchParams(window.location.hash.substring(1));
+            const hasError = redirectHashParams.get('error');
 
             if (hasError) {
                 alert('Cannot redirect - password reset link has expired. Please request a new one.');
