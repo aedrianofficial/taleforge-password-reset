@@ -84,6 +84,22 @@
             return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         }
 
+        // Debug function to show what parameters we received
+        function debugParameters() {
+            const token = getUrlParameter('token');
+            const type = getUrlParameter('type');
+            const accessToken = getUrlParameter('access_token');
+            const refreshToken = getUrlParameter('refresh_token');
+
+            console.log('Redirect page received parameters:', {
+                token: token ? 'present' : 'missing',
+                type: type || 'missing',
+                accessToken: accessToken ? 'present' : 'missing',
+                refreshToken: refreshToken ? 'present' : 'missing',
+                fullUrl: window.location.href
+            });
+        }
+
         // Function to construct the deep link URL
         function constructDeepLink() {
             const token = getUrlParameter('token');
@@ -128,6 +144,9 @@
 
         // Auto redirect when page loads
         window.onload = function() {
+            // Debug what parameters we received
+            debugParameters();
+
             // Check if mobile and update UI accordingly
             const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
