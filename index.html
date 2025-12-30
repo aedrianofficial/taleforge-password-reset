@@ -183,11 +183,10 @@
             let deepLinkUrl;
 
             if (isMobile) {
-                // For Expo Go on mobile, use the tunnel URL for external access
-                // Run: npx expo start --tunnel
-                // Then replace this URL with the tunnel URL shown in terminal
+                // For Expo Go on mobile, use your computer's IP address
+                // Replace 192.168.1.108 with your computer's actual IP address
+                // Find it with: hostname -I (Linux) or ipconfig/ifconfig (Windows/macOS)
                 deepLinkUrl = 'exp://192.168.1.108:8081/--/reset-password';
-                // Use the real reset-password route (moved to root level for deep linking)
                 console.log('Using deep link:', deepLinkUrl);
 
                 // Alternative: If using tunnel, uncomment and use:
