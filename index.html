@@ -68,7 +68,6 @@
     <div class="container">
         <h1>Taleforge</h1>
         <p id="message">Redirecting you to the password reset page...</p>
-        <p id="status" style="font-size: 12px; color: #666;">Page loaded at: <span id="timestamp"></span></p>
         <div class="spinner"></div>
 
         <!-- Debug info - shows what parameters were received -->
@@ -171,8 +170,6 @@
 
         // Function to construct the deep link URL
         function constructDeepLink() {
-            console.log('=== CONSTRUCTING DEEP LINK ===');
-
             const token = getUrlParameter('token');
             const type = getUrlParameter('type');
             const accessToken = getUrlParameter('access_token');
@@ -180,27 +177,16 @@
             const expiresAt = getUrlParameter('expires_at');
             const tokenType = getUrlParameter('token_type');
 
-            console.log('Extracted parameters:', {
-                token: token ? 'PRESENT' : 'MISSING',
-                type: type || 'MISSING',
-                accessToken: accessToken ? 'PRESENT' : 'MISSING',
-                refreshToken: refreshToken ? 'PRESENT' : 'MISSING'
-            });
-
             // Check if we're on mobile (Android/iOS)
             const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
             let deepLinkUrl;
 
             if (isMobile) {
-                // For Expo Go on mobile, use your computer's IP address
-                // Replace 192.168.1.108 with your computer's actual IP address
-                // Find it with: hostname -I (Linux) or ipconfig/ifconfig (Windows/macOS)
+                // For Expo Go on mobile, use the Expo development URL
+                // IMPORTANT: Replace 192.168.1.108 with your computer's local IP address
+                // Find your IP with: hostname -I (Linux) or ifconfig/ipconfig (macOS/Windows)
                 deepLinkUrl = 'exp://192.168.1.108:8081/--/reset-password';
-                console.log('Using mobile deep link base:', deepLinkUrl);
-
-                // Alternative: If using tunnel, uncomment and use:
-                // deepLinkUrl = 'exp://your-tunnel-url.exp.direct/--/reset-password';
             } else {
                 // For desktop or when custom scheme should work
                 deepLinkUrl = 'myapp://reset-password';
@@ -217,12 +203,8 @@
 
             if (params.length > 0) {
                 deepLinkUrl += '?' + params.join('&');
-                console.log('Added parameters to URL');
-            } else {
-                console.log('No parameters to add');
             }
 
-            console.log('Final deep link URL:', deepLinkUrl);
             return deepLinkUrl;
         }
 
@@ -242,9 +224,6 @@
             alert('Redirecting to: ' + deepLinkUrl); // Debug alert
             window.location.href = deepLinkUrl;
         }
-
-        // Set timestamp to verify page loaded
-        document.getElementById('timestamp').textContent = new Date().toLocaleTimeString();
 
         // Auto redirect when page loads
         window.onload = function() {
@@ -277,23 +256,10 @@
             // For debugging, wait longer to show debug info before redirecting
             setTimeout(function() {
                 const deepLinkUrl = constructDeepLink();
-                console.log('=== FINAL REDIRECT ATTEMPT ===');
-                console.log('Deep link URL:', deepLinkUrl);
-                console.log('Current location:', window.location.href);
-                console.log('User agent:', navigator.userAgent);
-
+                console.log('About to redirect to:', deepLinkUrl);
                 // Update message to show redirecting
                 document.getElementById('message').textContent = 'Redirecting to app...';
-
-                // Try the redirect with error handling
-                try {
-                    console.log('Initiating redirect...');
-                    window.location.href = deepLinkUrl;
-                    console.log('Redirect command executed');
-                } catch (error) {
-                    console.error('Redirect failed with error:', error);
-                    document.getElementById('message').textContent = 'Redirect failed - check console';
-                }
+                manualRedirect();
             }, 3000); // Wait 3 seconds to show debug info
         };
     </script>
