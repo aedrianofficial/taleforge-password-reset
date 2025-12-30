@@ -68,6 +68,7 @@
     <div class="container">
         <h1>Taleforge</h1>
         <p id="message">Redirecting you to the password reset page...</p>
+        <p id="status" style="font-size: 12px; color: #666;">Page loaded at: <span id="timestamp"></span></p>
         <div class="spinner"></div>
 
         <!-- Debug info - shows what parameters were received -->
@@ -229,6 +230,9 @@
             window.location.href = deepLinkUrl;
         }
 
+        // Set timestamp to verify page loaded
+        document.getElementById('timestamp').textContent = new Date().toLocaleTimeString();
+
         // Auto redirect when page loads
         window.onload = function() {
             // Debug what parameters we received (shows debug info on page)
@@ -260,10 +264,23 @@
             // For debugging, wait longer to show debug info before redirecting
             setTimeout(function() {
                 const deepLinkUrl = constructDeepLink();
-                console.log('About to redirect to:', deepLinkUrl);
+                console.log('=== FINAL REDIRECT ATTEMPT ===');
+                console.log('Deep link URL:', deepLinkUrl);
+                console.log('Current location:', window.location.href);
+                console.log('User agent:', navigator.userAgent);
+
                 // Update message to show redirecting
                 document.getElementById('message').textContent = 'Redirecting to app...';
-                manualRedirect();
+
+                // Try the redirect with error handling
+                try {
+                    console.log('Initiating redirect...');
+                    window.location.href = deepLinkUrl;
+                    console.log('Redirect command executed');
+                } catch (error) {
+                    console.error('Redirect failed with error:', error);
+                    document.getElementById('message').textContent = 'Redirect failed - check console';
+                }
             }, 3000); // Wait 3 seconds to show debug info
         };
     </script>
