@@ -115,9 +115,24 @@
             });
             console.log('========================');
 
+            // Check for Supabase errors in the URL hash
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const error = hashParams.get('error');
+            const errorCode = hashParams.get('error_code');
+            const errorDesc = hashParams.get('error_description');
+
             // Display debug info visually on the page
             let debugHtml = 'Full URL: ' + window.location.href + '<br><br>';
-            debugHtml += 'Parameters found:<br>';
+
+            if (error) {
+                debugHtml += '<strong style="color: #ff6b6b;">🚨 SUPABASE ERROR DETECTED:</strong><br>';
+                debugHtml += `Error: ${error}<br>`;
+                debugHtml += `Code: ${errorCode}<br>`;
+                debugHtml += `Description: ${decodeURIComponent(errorDesc || '')}<br><br>`;
+                debugHtml += '<strong>Solution:</strong> Request a new password reset link<br><br>';
+            }
+
+            debugHtml += 'Query Parameters found:<br>';
             const allParams = [];
             for (let [key, value] of urlParams) {
                 allParams.push(`${key}: ${value}`);
@@ -168,8 +183,17 @@
 
         // Function for manual redirect
         function manualRedirect() {
+            // Check for errors again
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const hasError = hashParams.get('error');
+
+            if (hasError) {
+                alert('Cannot redirect - password reset link has expired. Please request a new one.');
+                return;
+            }
+
             const deepLinkUrl = constructDeepLink();
-            console.log('Constructed deep link URL:', deepLinkUrl);
+            console.log('Manual redirect to:', deepLinkUrl);
             alert('Redirecting to: ' + deepLinkUrl); // Debug alert
             window.location.href = deepLinkUrl;
         }
@@ -179,12 +203,26 @@
             // Debug what parameters we received (shows debug info on page)
             debugParameters();
 
+            // Check for Supabase errors
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const hasError = hashParams.get('error');
+
+            if (hasError) {
+                // Show error state - don't redirect
+                document.getElementById('message').textContent = 'Password Reset Link Expired';
+                document.querySelector('.spinner').style.display = 'none';
+                document.getElementById('fallback-message').innerHTML =
+                    'This password reset link has expired or been used already.<br><br>' +
+                    '<a href="https://aedrianofficial.github.io/" class="button">Back to App</a>';
+                return;
+            }
+
             // Check if mobile and update UI accordingly
             const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
             if (isMobile) {
                 document.getElementById('message').textContent = 'Opening Taleforge app...';
-                document.getElementById('fallback-message').innerHTML = 'If the app doesn\'t open, make sure Expo Go is installed and <a href="#" onclick="manualRedirect()" class="button">try again</a>.';
+                document.getElementById('fallback-message').innerHTML = 'If the app doesn\'t open, make sure Expo Go is installed and <a href="#" onclick="manualRedirect()" class="button">click here</a> to try again.';
                 document.getElementById('mobile-instructions').style.display = 'block';
             }
 
